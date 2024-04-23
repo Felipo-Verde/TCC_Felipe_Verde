@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>PokeDiario</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS v5.2.1 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+
+    <%- include('css'); %>
+
+</head>
+
+<body>
+
+
+    <%- include('header'); %>
+
+        <main>
+            
+            <h1 style="font-size: 40px; text-align: center; margin: 20px;">Todas as Turmas</h1>
+
+            <div class="col">
+                <div class="row justify-content-center">
+
+                    <% pokemons.forEach(pokemon=> { %>
+
+                        <div class="card azul" style="width: 18rem; padding: 15px; margin: 20px; border-radius: 25px;">
+                            <div class="card-body">
+                                <h5 class="card-title"><%= pokemon.nome %></h5>
+                            </div>
+                            <ul class="list-group list-group-flush azul">
+                                <li class="list-group-item azul">Level: <%= pokemon.level %>
+                                </li>
+                                <li class="list-group-item azul">Liga: <%= pokemon.liga %>
+                                </li>
+                                <li class="list-group-item azul">genero: <%= pokemon.genero %>
+                                </li>
+                            </ul>
+                            <div class="card-footer text-decoration-none d-flex justify-content-evenly">
+                                <a href="/editar/<%= pokemon.id %>" class="text-decoration-none">
+                                    <button type="button" class="btn btn-primary text-decoration-none">Editar</button>
+                                </a>
+                                <a href="/deletar/<%= pokemon.id %>" class="text-decoration-none">
+                                    <button type="button" class="btn text-decoration-none" style="background-color: #2D3033; color: white;">Deletar</button>
+                                </a>
+                            </div>
+                        </div>
+
+                        <% }) %>
+                </div>
+            </div>
+        </main>
+
+
+            <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+                integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3"
+                crossorigin="anonymous">
+                </script>
+
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"
+                integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz"
+                crossorigin="anonymous">
+                </script>
+</body>
+
+</html>

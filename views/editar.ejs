@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>PokeDiario</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS v5.2.1 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    
+    
+    <%- include('css'); %>
+
+</head>
+
+<body>
+
+
+    <%- include('header'); %>
+
+        <main>
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+
+                        <% if (mensagem != '') { %>
+                            <div class="alert alert-danger" role="alert">
+                                <%= mensagem %>
+                                </div>
+                        <% } %>
+
+                        <form method="POST" action="#" enctype="multipart/form-data"> <!-- action="/cadastro" -->
+                            <legend style="font-size: 40px; text-align: center">Editar Pokémon</legend>
+
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" value="<%= pokemons[0]['nome'] %>" name="nome" id="nome" placeholder="nome">
+                                <label for="nome">Nome</label>
+                            </div>
+
+                            <div class="form-floating mb-3">
+
+                                <select class="form-select" id="floatingSelect" name="liga"
+                                    aria-label="Floating label select example">
+
+                                    <option <% if(pokemons[0]['liga']=='Kanto') { %> selected <% } %> value="Kanto">Kanto</option>
+                                    <option <% if(pokemons[0]['liga']=='Johto') { %> selected <% } %> value="Johto">Johto</option>
+                                    <option <% if(pokemons[0]['liga']=='Hoenn') { %> selected <% } %> value="Hoenn">Hoenn</option>
+                                    <option <% if(pokemons[0]['liga']=='Sinnoh') { %> selected <% } %> value="Sinnoh">Sinnoh</option>
+                                    <option <% if(pokemons[0]['liga']=='Unova') { %> selected <% } %> value="Unova">Unova</option>
+                                    <option <% if(pokemons[0]['liga']=='Kalos') { %> selected <% } %> value="Kalos">Kalos</option>
+                                    <option <% if(pokemons[0]['liga']=='Alola') { %> selected <% } %> value="Alola">Alola</option>
+                                    <option <% if(pokemons[0]['liga']=='Galar') { %> selected <% } %> value="Galar">Galar</option>
+                                    <option <% if(pokemons[0]['liga']=='Paldea') { %> selected <% } %> value="Paldea">Paldea</option>
+
+                                </select>
+                                <label for="floatingSelect">Liga</label>
+                            </div>
+
+                            <div class="row g-2">
+                                <div class="form-floating mb-3 col-md">
+                                    <select class="form-select" id="floatingSelect" name="genero"
+                                        aria-label="Floating label select example">
+
+                                        <option <% if(pokemons[0]['genero']=='Macho') { %> selected <% } %> value="Macho">Macho</option>
+                                        <option <% if(pokemons[0]['genero']=='Fêmea') { %> selected <% } %> value="Fêmea">Fêmea</option>
+
+                                    </select>
+                                    <label for="floatingSelect">Gênero</label>
+                                </div>
+
+                                <div class="form-floating mb-3 col-md">
+                                    <input type="number" class="form-control" name="level" id="level" placeholder="100"
+                                        min="1" max="100" value="<%= pokemons[0]['level'] %>">
+                                    <label for="level">Level</label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3 col-md-4">
+                                <label for="formFile" class="form-label" style="color: white">Uma foto do Pokémon :D</label>
+                                <input class="form-control" type="file" name="corte" id="formFile" required> 
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Enviar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+
+
+            <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+                integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3"
+                crossorigin="anonymous">
+                </script>
+
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"
+                integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz"
+                crossorigin="anonymous">
+                </script>
+</body>
+
+</html>
