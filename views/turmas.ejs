@@ -21,51 +21,101 @@
     <%- include('header'); %>
 
         <main>
-            
-            <h1 style="font-size: 40px; text-align: center; margin: 20px;">Todas as Turmas</h1>
 
-            <div class="col">
+            <% if (mensagem !='' ) { %>
+
+                <div class="alert alert-danger mx-auto" role="alert"
+                    style="margin: 20px; justify-content: center; align-items: center; text-align: center; width: 20rem;">
+                    <%= mensagem %>
+                </div>
+
+            <% } %>
+
+            <h1 style="font-size: 60px; text-align: center; margin: 20px;">Turmas <%= result[0]['nome_escola'] %></h1>
+
+            <div class="col justify-content-center text-center">
+                
+
+                <% if (tipo=="administrador" ) { %>
+                    <% try {
+                      if (email == result[0]['administrador_email_escola']) {  %>
+
+                        <a href="/cadastro_turma/<%= result[0]['id_escola'] %>" class="btn btn-primary"
+                            style="min-width: 10rem; max-width: 30rem; padding: 15px; margin: 0px">
+                            <h5 class="card-title" style="margin: 0;">
+                                <p style="font-size: 30px; margin: 0%;">Adicionar</p>
+                            </h5>
+                        </a>
+                    <% } } catch (error) {
+                        
+                    }%>
+                <% } %>
+
                 <div class="row justify-content-center">
 
-                    <% pokemons.forEach(pokemon=> { %>
+                    <% result.forEach(resulta=> { 
+                        if (resulta.nome_turma == null) {
+                            
+                        } else { %>
 
-                        <div class="card azul" style="width: 18rem; padding: 15px; margin: 20px; border-radius: 25px;">
-                            <div class="card-body">
-                                <h5 class="card-title"><%= pokemon.nome %></h5>
-                            </div>
-                            <ul class="list-group list-group-flush azul">
-                                <li class="list-group-item azul">Level: <%= pokemon.level %>
-                                </li>
-                                <li class="list-group-item azul">Liga: <%= pokemon.liga %>
-                                </li>
-                                <li class="list-group-item azul">genero: <%= pokemon.genero %>
-                                </li>
-                            </ul>
-                            <div class="card-footer text-decoration-none d-flex justify-content-evenly">
-                                <a href="/editar/<%= pokemon.id %>" class="text-decoration-none">
-                                    <button type="button" class="btn btn-primary text-decoration-none">Editar</button>
-                                </a>
-                                <a href="/deletar/<%= pokemon.id %>" class="text-decoration-none">
-                                    <button type="button" class="btn text-decoration-none" style="background-color: #2D3033; color: white;">Deletar</button>
-                                </a>
-                            </div>
-                        </div>
+                            <div class="card azul"
+                                style="width: 18rem; padding: 15px; margin: 20px; border-radius: 25px;">
 
-                        <% }) %>
+                                <div class="card-body text-center">
+
+                                    <a href="#">
+                                        <h5 class="card-title" style="margin: 0;">
+                                            <button type="button" class="btn btn-primary text-decoration-none">
+                                                <p style="font-size: 30px; margin: 0%;">
+                                                    <%= resulta.nome_turma %>
+                                                </p>
+                                            </button>
+                                        </h5>
+                                    </a>
+
+                                </div>
+
+                                <ul class="list-group list-group-flush azul">
+                                    <li class="list-group-item azul">Turno: <%= resulta.turno_turma %>
+                                    </li>
+                                    <li class="list-group-item azul">Alunos: <%= resulta.numalunos_turma %>
+                                    </li>
+                                </ul>
+
+                                <div class="card-footer text-decoration-none d-flex justify-content-evenly">
+
+                                    <% if (email != undefined) { %> 
+                                        <% if (email == resulta.administrador_email_escola) { %>
+
+                                            <a href="/editar_turma/<%= resulta.id_turma %>"
+                                                class="text-decoration-none">
+                                                <button type="button"
+                                                    class="btn btn-primary text-decoration-none">Editar</button>
+                                            </a>
+                                            <a href="/deletar_turma/<%= resulta.id_turma %>"
+                                                class="text-decoration-none">
+                                                <button type="button" class="btn text-decoration-none"
+                                                    style="background-color: #2D3033; color: white;">Deletar</button>
+                                            </a>
+
+                                        <% } %>
+                                    <% } %>
+                                </div>
+                            </div>    
+                        <% }
+                    }) %>
                 </div>
             </div>
         </main>
 
 
-            <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
-                integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3"
-                crossorigin="anonymous">
-                </script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+            integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3" crossorigin="anonymous">
+            </script>
 
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"
-                integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz"
-                crossorigin="anonymous">
-                </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"
+            integrity="sha384-7VPbUDkoPSGFnVtYi0QogXtr74QeVeeIs99Qfg5YCF+TidwNdjvaKZX19NZ/e6oz" crossorigin="anonymous">
+            </script>
 </body>
 
 </html>

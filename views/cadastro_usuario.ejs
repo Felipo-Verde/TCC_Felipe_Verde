@@ -51,8 +51,19 @@
                                 <label for="senha">Senha</label>
                             </div>
 
+                            <div class="form-floating mb-3">
+                                <select class="form-select" id="floatingSelect" name="tipo"
+                                    aria-label="Floating label select example">
+
+                                    <option value="professor">Professor</option>
+                                    <option value="administrador">Administrador</option>
+
+                                </select>
+                                <label for="floatingSelect">Tipo</label>
+                            </div>
+
                             <div class="mb-3 col-md-4">
-                                <label for="formFile" class="form-label" style="color: white">Uma <strong>linda</strong> foto sua :D</label>
+                                <label for="formFile" class="form-label" style="color: white">Uma foto sua</label>
                                 <input class="form-control" type="file" name="imagem" id="formFile" required>
                             </div>
 
