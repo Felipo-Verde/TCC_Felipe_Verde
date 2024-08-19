@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const path = require('path');
 var session = require('express-session');
 const bcrypt = require("bcrypt");
+const { render } = require('ejs');
 const saltRounds = 10;
 
 const app = express();
@@ -325,7 +326,7 @@ app.post('/editar_escola/:id', function (req, res) {
 
 // ------------- TURMAS -------------
 app.get('/turmas/:id_escola', function (req, res) {
-    var sql = "SELECT tb_turma.*, tb_escola.* FROM tb_turma JOIN tb_escola ON tb_turma.escola_id_turma = tb_escola.id_escola WHERE tb_turma.escola_id_turma = ?;"
+    var sql = "SELECT tb_turma.*, tb_escola.* FROM tb_turma JOIN tb_escola ON tb_turma.escola_id_turma = tb_escola.id_escola WHERE tb_turma.escola_id_turma = ? ORDER BY `tb_turma`.`nome_turma` ASC"
     var id_escola = req.params.id_escola;
     con.query(sql, id_escola, function (err, result, fields) {
         if (err) throw err;
@@ -433,7 +434,7 @@ app.get('/deletar_turma/:id', function (req, res) {
                     [req.params.id]
                 ];
                 con.query(sql, values, function (err, result) {
-                    if (err) throw err;                    
+                    if (err) throw err;
                     var sql = "DELETE FROM tb_turma WHERE id_turma = ?;";
                     var id = req.params.id
                     var id_escola = result[0]['escola_id_turma']
@@ -450,6 +451,7 @@ app.get('/deletar_turma/:id', function (req, res) {
 
 
 
+
 // UPDATE
 app.get('/editar_turma/:id', function (req, res) {
     // se logado
@@ -462,11 +464,12 @@ app.get('/editar_turma/:id', function (req, res) {
             })
         }
 
-        var sql = "SELECT * FROM tb_escola WHERE administrador_email_escola = ? AND id_escola = ?;"
+        var sql = "SELECT * FROM tb_turma, tb_escola WHERE tb_turma.escola_id_turma = tb_escola.id_escola AND tb_escola.administrador_email_escola = ? AND tb_turma.id_turma = ?;"
         var values = [
             [req.session.email],
             [req.params.id]
         ];
+
         con.query(sql, values, function (err, result) {
             if (err) throw err;
             if (!result.length) { // se não for o administrador da escola
@@ -476,12 +479,7 @@ app.get('/editar_turma/:id', function (req, res) {
                     res.render('escolas.ejs', { mensagem: "Você não é administrador desta escola!", logado: req.session.logado, escolas: result, imagem: req.session.imagem, email: req.session.email, tipo: req.session.tipo });
                 })
             } else if (req.session.email == result[0]['administrador_email_escola']) { // se for o administrador correto
-                var sql = "SELECT * FROM tb_escola where id_escola=?"
-                var id = req.params.id;
-                con.query(sql, id, function (err, result, fields) {
-                    if (err) throw err;
-                    res.render('editar_escola.ejs', { escola: result, mensagem: "", logado: req.session.logado, imagem: req.session.imagem, email: req.session.email });
-                });
+                res.render('editar_turma.ejs', { mensagem: "", logado: req.session.logado, result: result, imagem: req.session.imagem, email: req.session.email, tipo: req.session.tipo });
             }
         })
 
@@ -490,49 +488,69 @@ app.get('/editar_turma/:id', function (req, res) {
     }
 });
 
-app.post('/editar_escola/:id', function (req, res) {
+app.post('/editar_turma/:id', function (req, res) {
 
+    // se logado
     if (req.session.logado) {
-        if (req.session.tipo == "professor") {
+        if (req.session.tipo == "professor") { // se for professor
             var sql = "SELECT * FROM tb_escola"
             con.query(sql, function (err, result, fields) {
                 if (err) throw err;
-                res.render('escolas.ejs', { mensagem: "Você não é administrador", logado: req.session.logado, escolas: result, imagem: req.session.imagem, email: req.session.email, tipo: req.session.tipo });
+                res.render('turma.ejs', { mensagem: "Você não é administrador", logado: req.session.logado, escolas: result, imagem: req.session.imagem, email: req.session.email, tipo: req.session.tipo });
             })
-        } else {
-            var sql = "SELECT * FROM tb_escola"
-            con.query(sql, function (err, result, fields) {
-                if (err) throw err;
-                var form = new formidable.IncomingForm();
-                form.parse(req, (err, fields, files) => {
-                    var file = Object.values(files)[0];
-                    var oldpath = file.filepath;
-                    var hash = crypto.createHash('md5').update(Date.now().toString()).digest('hex');
-                    var ext = path.extname(file.originalFilename)
-                    var nomeimg = hash + ext
-                    var newpath = path.join(__dirname, 'public/images/', nomeimg);
-                    fs.rename(oldpath, newpath, function (err) {
+        }
+        var sql = "SELECT * FROM tb_turma, tb_escola WHERE tb_turma.escola_id_turma = tb_escola.id_escola AND tb_escola.administrador_email_escola = ? AND tb_turma.id_turma = ?;"
+        var values = [
+            [req.session.email],
+            [req.params.id]
+        ];
+
+        console.log(values);
+        
+
+        con.query(sql, values, function (err, result) {
+            if (err) throw err;
+
+            console.log(result);
+            
+            if (!result.length) { // se não for o administrador da escola
+                var sql = "SELECT * FROM tb_escola"
+                con.query(sql, function (err, result, fields) {
+                    if (err) throw err;
+                    res.render('escolas.ejs', { mensagem: "Você não é administrador desta escola!", logado: req.session.logado, escolas: result, imagem: req.session.imagem, email: req.session.email, tipo: req.session.tipo });
+                })
+            } else if (req.session.email == result[0]['administrador_email_escola']) { // se for o administrador correto
+
+                var sql = "SELECT * FROM `tb_turma` WHERE id_turma = ?;"
+                var id = req.params.id
+                con.query(sql, id, function (err, result, fields) {
+                    if (err) throw err;
+                    var id_escola = result[0]['escola_id_turma']
+                    var form = new formidable.IncomingForm();
+                    form.parse(req, (err, fields, files) => {
+
                         var id = req.params.id;
-                        var sql = "UPDATE tb_escola SET nome_escola = ?, endereco_escola = ?, foto_escola = ? WHERE id_escola = ?";
+                        var sql = "UPDATE tb_turma SET nome_turma = ?, turno_turma = ?, numalunos_turma = ? WHERE id_turma = ?";
                         var values = [
                             [fields['nome']],
-                            [fields['endereco']],
-                            [nomeimg],
+                            [fields['turno']],
+                            [fields['alunos']],
                             [id]
                         ];
                         con.query(sql, values, function (err, result) {
                             if (err) throw err;
                             console.log("Numero de registros alterados: " + result.affectedRows);
-                            res.redirect('/escolas');
+                            res.redirect('/turmas/' + id_escola);
                         });
-                    });
+
+                    })
                 })
-            })
-        }
-    } else {
-        res.render('login.ejs', { mensagem: "Realize o Login", logado: req.session.logado, imagem: req.session.imagem });
+            }
+        })
     }
 });
+
+
 
 
 
