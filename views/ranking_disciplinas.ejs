@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    <title>PokeDiario</title>
+    <title>Barulhometro</title>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -20,42 +20,34 @@
 
     <%- include('header'); %>
 
+    <% var i = 0;%>
         <main>
             
-            <h1 style="font-size: 40px; text-align: center; margin: 20px;">Melhores Turmas</h1>
+            <h1 style="font-size: 40px; text-align: center; margin: 20px;">Melhores Disciplinas da escola <%= result[0]['nome_escola'] %></h1>
 
             <div class="col">
                 <div class="row justify-content-center">
-                    <div class="col-md-8">
+                    <div class="col-md-3">
 
                         <table class="table" style="color: white;">
                             <thead>
-                            <tr>
+                            <tr >
+                                <th scope="col">Turma</th>
+                                <th scope="col">Disciplina</th>
+                                <th scope="col">Advertências</th>
                                 <th scope="col">#</th>
-                                <th scope="col">First</th>
-                                <th scope="col">Last</th>
-                                <th scope="col">Handle</th>
                             </tr>
                             </thead>
                             <tbody class="table-group-divider">
-                            <tr>
-                                <th scope="row">1</th>
-                                <td>Mark</td>
-                                <td>Otto</td>
-                                <td>@mdo</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">2</th>
-                                <td>Jacob</td>
-                                <td>Thornton</td>
-                                <td>@fat</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">3</th>
-                                <td>Larry</td>
-                                <td>O Gay</td>
-                                <td>@twitter</td>
-                            </tr>
+                            <% result.forEach(resulta => { %>    
+                                <tr>
+                                    <td><%= resulta.nome_turma %></td>
+                                    <td><%= resulta.nome_disciplina %></td>
+                                    <td><%= resulta.num_advertencias %></td>
+                                    <% i++ %>
+                                    <th scope="row"><%= i %></th>
+                                </tr>
+                            <% }); %>
                             </tbody>
                         </table>
                     </div>

@@ -12,6 +12,7 @@ CREATE TABLE tb_escola (
     id_escola INT AUTO_INCREMENT PRIMARY KEY,
     nome_escola VARCHAR(100) NOT NULL,
     endereco_escola VARCHAR(255) NOT NULL,
+    foto_escola VARCHAR(100) NOT NULL,
     administrador_email_escola VARCHAR(100) NOT NULL,
     FOREIGN KEY (administrador_email_escola) REFERENCES tb_usuario(email_usuario)
 );
@@ -22,6 +23,7 @@ CREATE TABLE tb_turma (
     nome_turma VARCHAR(100) NOT NULL,
     turno_turma ENUM('matutino', 'vespertino', 'noturno') NOT NULL,
     escola_id_turma INT NOT NULL,
+    numalunos_turma INT NOT NULL,
     FOREIGN KEY (escola_id_turma) REFERENCES tb_escola(id_escola)
 );
 

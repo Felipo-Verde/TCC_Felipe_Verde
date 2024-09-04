@@ -128,6 +128,12 @@ app.get('/logout', function (req, res) {
 
 
 
+
+//-------------------------------------------------------------------------------------------------------
+
+
+
+
 // ------------- ESCOLAS -------------
 
 app.get('/escolas', function (req, res) {
@@ -321,6 +327,13 @@ app.post('/editar_escola/:id', function (req, res) {
         res.render('login.ejs', { mensagem: "Realize o Login", logado: req.session.logado, imagem: req.session.imagem });
     }
 });
+
+
+
+
+//------------------------------------------------------------------------------------------------------------------------
+
+
 
 
 
@@ -551,6 +564,100 @@ app.post('/editar_turma/:id', function (req, res) {
 });
 
 
+
+
+
+//----------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+// ------------- DISCIPLINAS -------------
+app.get('/disciplinas/:id_turma', function (req, res) {
+    var sql = "SELECT *, COUNT(tb_advertencia.id_advertencia) AS num_advertencias FROM tb_disciplina, tb_advertencia, tb_turma, tb_escola WHERE tb_turma.escola_id_turma = tb_escola.id_escola AND tb_disciplina.turma_id_disciplina = tb_turma.id_turma AND tb_advertencia.disciplina_id_advertencia = tb_disciplina.id_disciplina AND tb_turma.id_turma = ? GROUP BY tb_disciplina.id_disciplina ORDER BY tb_turma.nome_turma ASC;"
+    var id_turma = req.params.id_turma;
+    con.query(sql, id_turma, function (err, result, fields) {
+        if (err) throw err;
+        if (result.length) { // se tiver turmas cadastradas
+            res.render('disciplina.ejs', { mensagem: "", logado: req.session.logado, result: result, imagem: req.session.imagem, tipo: req.session.tipo, email: req.session.email }); 
+        } else { // se NÃO tiver turmas cadastradas
+            var sql = "SELECT * FROM tb_escola, tb_turma WHERE tb_escola.id_escola = tb_turma.escola_id_turma AND tb_turma.id_turma = ?"
+            var id_turma = req.params.id_turma;
+            con.query(sql, id_turma, function (err, result, fields) {
+                if (err) throw err; 
+                res.render('disciplina.ejs', { mensagem: "", logado: req.session.logado, result: result, imagem: req.session.imagem, tipo: req.session.tipo, email: req.session.email });
+            });
+        }
+    });
+});
+
+//------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+// ------------- RANKINGS -------------
+
+app.get('/ranking_turmas/:id_escola', function (req, res) {
+    var sql = "SELECT t.id_turma, t.nome_turma, e.nome_escola, COUNT(a.id_advertencia) AS total_advertencias FROM tb_turma t LEFT JOIN tb_escola e ON t.escola_id_turma = e.id_escola LEFT JOIN tb_disciplina d ON t.id_turma = d.turma_id_disciplina LEFT JOIN tb_advertencia a ON d.id_disciplina = a.disciplina_id_advertencia WHERE t.escola_id_turma = 1 GROUP BY t.id_turma, t.nome_turma, e.nome_escola ORDER BY total_advertencias ASC;"
+    var id_escola = req.params.id_escola;
+    console.log(id_escola);
+    con.query(sql, id_escola, function (err, result, fields) {
+        if (err) throw err;
+        if (result.length) { // se tiver turmas cadastradas
+            res.render('ranking_turmas.ejs', { mensagem: "", logado: req.session.logado, result: result, imagem: req.session.imagem, tipo: req.session.tipo, email: req.session.email }); 
+        } else { // se NÃO tiver turmas cadastradas
+            var sql = "SELECT * FROM tb_escola WHERE id_escola = ?"
+            var id_escola = req.params.id_escola;
+            con.query(sql, id_escola, function (err, result, fields) {
+                if (err) throw err;
+                res.render('ranking_turmas.ejs', { mensagem: "", logado: req.session.logado, result: result, imagem: req.session.imagem, tipo: req.session.tipo, email: req.session.email }); 
+            });
+        }
+    });
+})
+
+app.get('/ranking_disciplinas/:id_escola', function (req, res) {
+    var sql = "SELECT e.nome_escola, t.nome_turma, d.nome_disciplina, COUNT(a.id_advertencia) AS num_advertencias FROM tb_escola e JOIN tb_turma t ON e.id_escola = t.escola_id_turma JOIN tb_disciplina d ON t.id_turma = d.turma_id_disciplina LEFT JOIN tb_advertencia a ON d.id_disciplina = a.disciplina_id_advertencia WHERE e.id_escola = 1 GROUP BY e.nome_escola, t.nome_turma, d.nome_disciplina ORDER BY num_advertencias ASC;"
+    var id_escola = req.params.id_escola;
+    console.log(id_escola);
+    con.query(sql, id_escola, function (err, result, fields) {
+        if (err) throw err;
+        if (result.length) { // se tiver turmas cadastradas
+            res.render('ranking_disciplinas.ejs', { mensagem: "", logado: req.session.logado, result: result, imagem: req.session.imagem, tipo: req.session.tipo, email: req.session.email }); 
+        } else { // se NÃO tiver turmas cadastradas
+            var sql = "SELECT * FROM tb_escola WHERE id_escola = ?"
+            var id_escola = req.params.id_escola;
+            con.query(sql, id_escola, function (err, result, fields) {
+                if (err) throw err;
+                res.render('ranking_disciplinas.ejs', { mensagem: "", logado: req.session.logado, result: result, imagem: req.session.imagem, tipo: req.session.tipo, email: req.session.email }); 
+            });
+        }
+    });
+})
+
+app.get('/ranking_disciplinas_turmas/:id_escola', function (req, res) {
+    var sql = "SELECT t.nome_turma, d.nome_disciplina, COUNT(a.id_advertencia) AS total_advertencias FROM tb_disciplina d JOIN tb_turma t ON d.turma_id_disciplina = t.id_turma LEFT JOIN tb_advertencia a ON d.id_disciplina = a.disciplina_id_advertencia WHERE t.id_turma = 1 GROUP BY t.nome_turma, d.nome_disciplina ORDER BY total_advertencias ASC;"
+    var id_escola = req.params.id_escola;
+    console.log(id_escola);
+    con.query(sql, id_escola, function (err, result, fields) {
+        if (err) throw err;
+        if (result.length) { // se tiver turmas cadastradas
+            res.render('ranking_disciplinas_turmas.ejs', { mensagem: "", logado: req.session.logado, result: result, imagem: req.session.imagem, tipo: req.session.tipo, email: req.session.email }); 
+        } else { // se NÃO tiver turmas cadastradas
+            var sql = "SELECT * FROM tb_escola WHERE id_escola = ?"
+            var id_escola = req.params.id_escola;
+            con.query(sql, id_escola, function (err, result, fields) {
+                if (err) throw err;
+                res.render('ranking_disciplinas_turmas.ejs', { mensagem: "", logado: req.session.logado, result: result, imagem: req.session.imagem, tipo: req.session.tipo, email: req.session.email }); 
+            });
+        }
+    });
+})
 
 
 

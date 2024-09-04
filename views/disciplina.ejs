@@ -32,9 +32,9 @@
             <% } %>
 
             
-            <h1 style="font-size: 60px; text-align: center; margin: 20px;">Turmas <%= result[0]['nome_escola'] %></h1>
-           
+            <h1 style="font-size: 60px; text-align: center; margin: 20px;">Disciplinas da turma <%= result[0]['nome_turma'] %></h1>
 
+            
             <div class="col justify-content-center text-center">
                 
 
@@ -42,7 +42,7 @@
                     <% try {
                       if (email == result[0]['administrador_email_escola']) {  %>
 
-                        <a href="/cadastro_turma/<%= result[0]['id_escola'] %>" class="btn btn-primary"
+                        <a href="/cadastro_disciplina/<%= result[0]['id_turma'] %>" class="btn btn-primary"
                             style="min-width: 10rem; max-width: 30rem; padding: 15px; margin: 0px">
                             <h5 class="card-title" style="margin: 0;">
                                 <p style="font-size: 30px; margin: 0%;">Adicionar</p>
@@ -56,33 +56,26 @@
                 <div class="row justify-content-center">
 
                     <% result.forEach(resulta=> { 
-                        if (resulta.nome_turma == null) {
+                        if (resulta.nome_disciplina == null) {
                             
                         } else { %>
-
+                            
                             <div class="card azul"
                                 style="width: 18rem; padding: 15px; margin: 20px; border-radius: 25px;">
 
                                 <div class="card-body text-center">
 
-                                    <a href="#">
-                                        <h5 class="card-title" style="margin: 0;">
-                                            <a href="/disciplinas/<%= resulta.id_turma %>">
-                                                <button type="button" class="btn btn-primary text-decoration-none">
-                                                    <p style="font-size: 30px; margin: 0%;">
-                                                        <%= resulta.nome_turma %>
-                                                    </p>
-                                                </button>
-                                            </a>
-                                        </h5>
-                                    </a>
+
+                                    <h5 class="card-title" style="margin: 0;">
+                                        <p style="font-size: 30px; margin: 0%;">
+                                            <%= resulta.nome_disciplina %>
+                                        </p>
+                                    </h5>
 
                                 </div>
 
                                 <ul class="list-group list-group-flush azul">
-                                    <li class="list-group-item azul">Turno: <%= resulta.turno_turma %>
-                                    </li>
-                                    <li class="list-group-item azul">Alunos: <%= resulta.numalunos_turma %>
+                                    <li class="list-group-item azul">Advertências: <%= resulta.num_advertencias %>
                                     </li>
                                 </ul>
 
@@ -91,12 +84,12 @@
                                     <% if (email != undefined) { %> 
                                         <% if (email == resulta.administrador_email_escola) { %>
 
-                                            <a href="/editar_turma/<%= resulta.id_turma %>"
+                                            <a href="/editar_turma/<%= resulta.id_disciplina  %>"
                                                 class="text-decoration-none">
                                                 <button type="button"
                                                     class="btn btn-primary text-decoration-none">Editar</button>
                                             </a>
-                                            <a href="/deletar_turma/<%= resulta.id_turma %>"
+                                            <a href="/deletar_turma/<%= resulta.id_disciplina  %>"
                                                 class="text-decoration-none">
                                                 <button type="button" class="btn text-decoration-none"
                                                     style="background-color: #2D3033; color: white;">Deletar</button>
@@ -110,13 +103,7 @@
                     }) %>
                 </div>
 
-                <a href="/ranking_turmas/<%= result[0]['id_escola'] %>" class="btn btn-primary" style="min-width: 10rem; max-width: 30rem; padding: 15px; margin: 10px">
-                    <h5 class="card-title" style="margin: 0;">
-                        <p style="font-size: 30px; margin: 0%;">Melhores Turmas</p>
-                    </h5>
-                </a>
-
-                <a href="/ranking_disciplinas/<%= result[0]['id_escola'] %>" class="btn btn-primary" style="min-width: 10rem; max-width: 30rem; padding: 15px; margin: 10px">
+                <a href="/ranking_disciplinas_turmas/<%= result[0]['id_escola'] %>" class="btn btn-primary" style="min-width: 10rem; max-width: 30rem; padding: 15px; margin: 10px">
                     <h5 class="card-title" style="margin: 0;">
                         <p style="font-size: 30px; margin: 0%;">Melhores Disciplinas</p>
                     </h5>
