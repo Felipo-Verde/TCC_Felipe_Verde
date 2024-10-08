@@ -2,12 +2,28 @@
     <div class="container text-decoration-none">
         <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start text-decoration-none">
 
-            <a href="/turmas" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none"> 
+            <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-white text-decoration-none"> 
                 <img src="https://i0.wp.com/dronebotworkshop.com/wp-content/uploads/2023/04/dronebotworkshop-arduino-uno.png?fit=347%2C246&ssl=1" alt="logo" width="50px" style="margin-right: 40px;">
             </a>
 
             <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-                <li><a href="/cadastro"><button type="button" class="btn btn-primary">Adicionar</button></a></li>
+                <li><a href="/Escolas"><button type="button" class="btn btn-primary" style="margin: 5px;">Escolas</button></a></li>
+                <% try { %>
+                    
+                    <% if (result[0]['nome_disciplina']) { %>
+                        <li><a href="/turmas/<%= result[0]['escola_id_turma'] %>"><button type="button" class="btn btn-primary" style="margin: 5px;"> <%= result[0]['nome_escola'] %> </button></a></li>
+                    <% } %>
+
+                <% } catch (error) { } %>
+
+                <% try { %>
+                    
+                    <% if (result[0]['total_advertencias']) { %>
+                        <li><a href="/disciplinas/<%= result[0]['turma_id_disciplina'] %>"><button type="button" class="btn btn-primary" style="margin: 5px;"> <%= result[0]['nome_turma'] %> </button></a></li>
+                    <% } %>
+
+                <% } catch (error) { } %>
+
             </ul>
 
             <% if (logado) { %>
@@ -17,6 +33,7 @@
                         <img src="/images/<%= imagem %>" alt="pic" width="50" height="50" class="rounded-circle">
                     </a>
                     <ul class="dropdown-menu text-small" style="">
+                        <li><a class="dropdown-item" href="/usuario/<%= email %>">Perfil</a></li>
                         <li><a class="dropdown-item" href="/logout">Logout</a></li>
                     </ul>
                 </div>

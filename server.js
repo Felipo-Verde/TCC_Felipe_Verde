@@ -40,7 +40,7 @@ con.connect(function (err) {
 
 
 app.get('/', function (req, res) {
-    res.render('landpg.ejs', { mensagem: "", logado: req.session.logado, imagem: req.session.imagem, email: req.session.email, tipo: req.session.tipo });
+    res.render('landpg.ejs', { mensagem: "", logado: req.session.logado, result: 0, imagem: req.session.imagem, email: req.session.email, tipo: req.session.tipo });
 });
 
 
@@ -48,7 +48,7 @@ app.get('/', function (req, res) {
 
 // CADASTRO USUARIO
 app.get('/cadastro_usuario', function (req, res) {
-    res.render('cadastro_usuario.ejs', { mensagem: "", logado: req.session.logado, imagem: req.session.imagem });
+    res.render('cadastro_usuario.ejs', { mensagem: "", result: 0, logado: req.session.logado, imagem: req.session.imagem });
 });
 
 app.post('/cadastro_usuario', function (req, res) {
@@ -62,7 +62,7 @@ app.post('/cadastro_usuario', function (req, res) {
             if (err) throw err;
             // verificação se o email ja foi cadastrado
             if (result.length > 0) {
-                res.render('cadastro_usuario.ejs', { mensagem: "Email já Cadastrado", logado: req.session.logado, imagem: req.session.imagem });
+                res.render('cadastro_usuario.ejs', { mensagem: "Email já Cadastrado", result: 0, logado: req.session.logado, imagem: req.session.imagem });
             }
             // email válido
             else {
@@ -91,7 +91,7 @@ app.post('/cadastro_usuario', function (req, res) {
 
 //LOGIN USUARIO
 app.get('/login', function (req, res) {
-    res.render('login.ejs', { mensagem: "", logado: req.session.logado, imagem: req.session.imagem });
+    res.render('login.ejs', { mensagem: "", result: 0, logado: req.session.logado, imagem: req.session.imagem });
 });
 
 app.post('/login', function (req, res) {
@@ -112,10 +112,10 @@ app.post('/login', function (req, res) {
                     req.session.tipo = result[0]['tipo_usuario'];
                     res.redirect('/escolas');
                 }
-                else { res.render('login', { mensagem: "Senha inválida", logado: req.session.logado, imagem: req.session.imagem }) }
+                else { res.render('login', { mensagem: "Senha inválida", result: 0, logado: req.session.logado, imagem: req.session.imagem }) }
             });
         }
-        else { res.render('login.ejs', { mensagem: "E-mail não encontrado", logado: req.session.logado, imagem: req.session.imagem }) }
+        else { res.render('login.ejs', { mensagem: "E-mail não encontrado", result: 0, logado: req.session.logado, imagem: req.session.imagem }) }
     });
 });
 
@@ -123,7 +123,7 @@ app.get('/logout', function (req, res) {
     req.session.destroy(function (err) {
 
     })
-    res.render('login', { logado: false, imagem: '' });
+    res.render('login', { logado: false, result: 0, imagem: '' });
 });
 
 
@@ -157,10 +157,10 @@ app.get('/cadastro_escola', function (req, res) {
                 res.render('escolas.ejs', { mensagem: "Você não é administrador", logado: req.session.logado, escolas: result, imagem: req.session.imagem, email: req.session.email, tipo: req.session.tipo });
             });
         } else { // se for administrador
-            res.render('cadastro_escola', { mensagem: "", logado: req.session.logado, imagem: req.session.imagem, email: req.session.email, tipo: req.session.tipo });
+            res.render('cadastro_escola', { mensagem: "", result: 0, logado: req.session.logado, imagem: req.session.imagem, email: req.session.email, tipo: req.session.tipo });
         }
     } else { // se não estiver logado
-        res.render('login', { mensagem: "Realize o login", logado: req.session.logado, imagem: req.session.imagem });
+        res.render('login', { mensagem: "Realize o login", logado: req.session.logado, result: 0, imagem: req.session.imagem });
     }
 
 });
@@ -593,6 +593,13 @@ app.get('/disciplinas/:id_turma', function (req, res) {
     });
 });
 
+
+// CADASTRO 
+
+
+
+
+
 //------------------------------------------------------------------------------------------------------------------------
 
 
@@ -603,7 +610,7 @@ app.get('/disciplinas/:id_turma', function (req, res) {
 // ------------- RANKINGS -------------
 
 app.get('/ranking_turmas/:id_escola', function (req, res) {
-    var sql = "SELECT t.id_turma, t.nome_turma, e.nome_escola, COUNT(a.id_advertencia) AS total_advertencias FROM tb_turma t LEFT JOIN tb_escola e ON t.escola_id_turma = e.id_escola LEFT JOIN tb_disciplina d ON t.id_turma = d.turma_id_disciplina LEFT JOIN tb_advertencia a ON d.id_disciplina = a.disciplina_id_advertencia WHERE t.escola_id_turma = 1 GROUP BY t.id_turma, t.nome_turma, e.nome_escola ORDER BY total_advertencias ASC;"
+    var sql = "SELECT t.id_turma, t.nome_turma, e.nome_escola, t.escola_id_turma, d.turma_id_disciplina, COUNT(a.id_advertencia) AS total_advertencias FROM tb_turma t LEFT JOIN tb_escola e ON t.escola_id_turma = e.id_escola LEFT JOIN tb_disciplina d ON t.id_turma = d.turma_id_disciplina LEFT JOIN tb_advertencia a ON d.id_disciplina = a.disciplina_id_advertencia WHERE t.escola_id_turma = 1 GROUP BY t.id_turma, t.nome_turma, e.nome_escola, t.escola_id_turma, d.turma_id_disciplina ORDER BY total_advertencias ASC;"
     var id_escola = req.params.id_escola;
     console.log(id_escola);
     con.query(sql, id_escola, function (err, result, fields) {
@@ -622,7 +629,7 @@ app.get('/ranking_turmas/:id_escola', function (req, res) {
 })
 
 app.get('/ranking_disciplinas/:id_escola', function (req, res) {
-    var sql = "SELECT e.nome_escola, t.nome_turma, d.nome_disciplina, COUNT(a.id_advertencia) AS num_advertencias FROM tb_escola e JOIN tb_turma t ON e.id_escola = t.escola_id_turma JOIN tb_disciplina d ON t.id_turma = d.turma_id_disciplina LEFT JOIN tb_advertencia a ON d.id_disciplina = a.disciplina_id_advertencia WHERE e.id_escola = 1 GROUP BY e.nome_escola, t.nome_turma, d.nome_disciplina ORDER BY num_advertencias ASC;"
+    var sql = "SELECT e.nome_escola, t.nome_turma, d.nome_disciplina, d.turma_id_disciplina, t.escola_id_turma, COUNT(a.id_advertencia) AS total_advertencias FROM tb_escola e JOIN tb_turma t ON e.id_escola = t.escola_id_turma JOIN tb_disciplina d ON t.id_turma = d.turma_id_disciplina LEFT JOIN tb_advertencia a ON d.id_disciplina = a.disciplina_id_advertencia WHERE e.id_escola = 1 GROUP BY e.nome_escola, t.nome_turma, d.nome_disciplina, d.turma_id_disciplina, t.escola_id_turma ORDER BY total_advertencias ASC;"
     var id_escola = req.params.id_escola;
     console.log(id_escola);
     con.query(sql, id_escola, function (err, result, fields) {
@@ -641,7 +648,7 @@ app.get('/ranking_disciplinas/:id_escola', function (req, res) {
 })
 
 app.get('/ranking_disciplinas_turmas/:id_escola', function (req, res) {
-    var sql = "SELECT t.nome_turma, d.nome_disciplina, COUNT(a.id_advertencia) AS total_advertencias FROM tb_disciplina d JOIN tb_turma t ON d.turma_id_disciplina = t.id_turma LEFT JOIN tb_advertencia a ON d.id_disciplina = a.disciplina_id_advertencia WHERE t.id_turma = 1 GROUP BY t.nome_turma, d.nome_disciplina ORDER BY total_advertencias ASC;"
+    var sql = "SELECT t.nome_turma, d.nome_disciplina, d.turma_id_disciplina, t.escola_id_turma, COUNT(a.id_advertencia) AS total_advertencias FROM tb_disciplina d JOIN tb_turma t ON d.turma_id_disciplina = t.id_turma LEFT JOIN tb_advertencia a ON d.id_disciplina = a.disciplina_id_advertencia WHERE t.id_turma = 1 GROUP BY t.nome_turma, d.nome_disciplina, d.turma_id_disciplina, t.escola_id_turma ORDER BY total_advertencias ASC;"
     var id_escola = req.params.id_escola;
     console.log(id_escola);
     con.query(sql, id_escola, function (err, result, fields) {
