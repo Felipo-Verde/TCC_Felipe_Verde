@@ -424,7 +424,7 @@ app.get('/deletar_turma/:id', function (req, res) {
             var sql = "SELECT * FROM tb_escola"
             con.query(sql, function (err, result, fields) {
                 if (err) throw err;
-                res.render('turma.ejs', { mensagem: "Você não é administrador", logado: req.session.logado, escolas: result, imagem: req.session.imagem, email: req.session.email, tipo: req.session.tipo });
+                res.redirect('/turmas/'+req.params.id)
             })
         }
         var sql = "SELECT * FROM tb_turma, tb_escola WHERE tb_turma.escola_id_turma = tb_escola.id_escola AND tb_escola.administrador_email_escola = ? AND tb_turma.id_turma = ?;"
@@ -509,7 +509,7 @@ app.post('/editar_turma/:id', function (req, res) {
             var sql = "SELECT * FROM tb_escola"
             con.query(sql, function (err, result, fields) {
                 if (err) throw err;
-                res.render('turma.ejs', { mensagem: "Você não é administrador", logado: req.session.logado, escolas: result, imagem: req.session.imagem, email: req.session.email, tipo: req.session.tipo });
+                res.redirect('/turmas/' + req.params.id)
             })
         }
         var sql = "SELECT * FROM tb_turma, tb_escola WHERE tb_turma.escola_id_turma = tb_escola.id_escola AND tb_escola.administrador_email_escola = ? AND tb_turma.id_turma = ?;"
@@ -576,7 +576,7 @@ app.post('/editar_turma/:id', function (req, res) {
 
 // ------------- DISCIPLINAS -------------
 app.get('/disciplinas/:id_turma', function (req, res) {
-    var sql = "SELECT *, COUNT(tb_advertencia.id_advertencia) AS num_advertencias FROM tb_disciplina, tb_advertencia, tb_turma, tb_escola WHERE tb_turma.escola_id_turma = tb_escola.id_escola AND tb_disciplina.turma_id_disciplina = tb_turma.id_turma AND tb_advertencia.disciplina_id_advertencia = tb_disciplina.id_disciplina AND tb_turma.id_turma = ? GROUP BY tb_disciplina.id_disciplina ORDER BY tb_turma.nome_turma ASC;"
+    var sql = "SELECT *, COUNT(tb_advertencia.id_advertencia) AS num_advertencias FROM tb_disciplina JOIN tb_turma ON tb_disciplina.turma_id_disciplina = tb_turma.id_turma JOIN tb_escola ON tb_turma.escola_id_turma = tb_escola.id_escola JOIN tb_usuario ON tb_escola.administrador_email_escola = tb_usuario.email_usuario LEFT JOIN tb_advertencia ON tb_disciplina.id_disciplina = tb_advertencia.disciplina_id_advertencia WHERE tb_turma.id_turma = ? GROUP BY tb_disciplina.id_disciplina, tb_escola.id_escola, tb_usuario.email_usuario, tb_turma.id_turma;"
     var id_turma = req.params.id_turma;
     con.query(sql, id_turma, function (err, result, fields) {
         if (err) throw err;
@@ -594,8 +594,247 @@ app.get('/disciplinas/:id_turma', function (req, res) {
 });
 
 
-// CADASTRO 
 
+// CADASTRO
+app.get('/cadastro_disciplina/:id_turma', function (req, res) {
+
+    if (req.session.logado) { //se logado
+        if (req.session.tipo == "professor") { //se professor
+            var sql = "SELECT * FROM tb_escola"
+            con.query(sql, function (err, result, fields) {
+                if (err) throw err;
+                res.render('escolas.ejs', { mensagem: "Você não é administrador", logado: req.session.logado, escolas: result, imagem: req.session.imagem, email: req.session.email, tipo: req.session.tipo });
+            })
+        }
+
+        var sql = "SELECT t.*, e.nome_escola, u.email_usuario, u.nome_usuario, u.foto_usuario FROM tb_turma t JOIN tb_escola e ON t.escola_id_turma = e.id_escola JOIN tb_usuario u ON u.tipo_usuario = 'professor' WHERE t.id_turma = ?;"
+        var values = [
+            [req.params.id_turma]
+        ];
+        con.query(sql, values, function (err, result) { // se adm
+            if (err) throw err;
+
+            res.render('cadastro_disciplina.ejs', { mensagem: "", logado: req.session.logado, result: result, imagem: req.session.imagem, email: req.session.email, tipo: req.session.tipo });
+
+        })
+    }
+
+});
+
+
+app.post('/cadastro_disciplina/:id_turma', function (req, res) {
+
+    id = req.params.id_turma
+    if (req.session.logado) { // se logado
+        if (req.session.tipo == "professor") { // se professor
+            var sql = "SELECT * FROM tb_escola"
+            con.query(sql, function (err, result, fields) {
+                if (err) throw err;
+                res.render('escolas.ejs', { mensagem: "Você não é administrador", logado: req.session.logado, escolas: result, imagem: req.session.imagem, email: req.session.email, tipo: req.session.tipo });
+            })
+        } else { // se adm
+            var form = new formidable.IncomingForm();
+            form.parse(req, (err, fields, files) => {
+                if (err) throw err;
+                var sql = "INSERT INTO `tb_disciplina` (`nome_disciplina`, `turma_id_disciplina`, `professor_email_disciplina`) VALUES ?;";
+                var values = [[fields['nome'], id, fields['professor']]];
+                con.query(sql, [values], function (err, result) {
+                    if (err) throw err;
+                    console.log("Numero de registros inseridos: " + result.affectedRows);
+                    res.redirect('/disciplinas/' + id)
+                });
+            })
+        }
+    } else {
+        res.render('login.ejs', { mensagem: "Realize o Login", logado: req.session.logado, imagem: req.session.imagem });
+    }
+})
+
+
+// DELETAR
+app.get('/deletar_disciplina/:id', function (req, res) {
+    // se logado
+    if (req.session.logado) {
+        var sql = "SELECT tb_disciplina.*, tb_turma.*, tb_escola.* FROM tb_disciplina JOIN tb_turma ON tb_disciplina.turma_id_disciplina = tb_turma.id_turma JOIN tb_escola ON tb_turma.escola_id_turma = tb_escola.id_escola LEFT JOIN tb_usuario ON tb_usuario.email_usuario = tb_disciplina.professor_email_disciplina OR tb_usuario.email_usuario = tb_escola.administrador_email_escola WHERE tb_disciplina.id_disciplina = ? AND tb_usuario.email_usuario = ? AND (tb_usuario.email_usuario = tb_disciplina.professor_email_disciplina OR tb_usuario.email_usuario = tb_escola.administrador_email_escola);"
+        var values = [
+            [req.params.id],
+            [req.session.email]
+        ];
+        con.query(sql, values, function (err, result, fields) {
+            if (err) throw err;
+            if (result[0]['administrador_email_escola'] == req.session.email || result[0]['professor_email_disciplina']) { // se é o adm da escola ou professor da disciplina   
+                var sql = "SELECT * FROM tb_disciplina, tb_turma, tb_escola WHERE tb_turma.escola_id_turma = tb_escola.id_escola AND tb_escola.administrador_email_escola = ? AND tb_disciplina.id_disciplina = ? AND tb_disciplina.turma_id_disciplina = tb_turma.id_turma;"
+                var values = [
+                    [req.session.email],
+                    [req.params.id]
+                ];
+                console.log('5');
+                
+                con.query(sql, values, function (err, result) {
+                    if (err) throw err;
+                    
+                    if (req.session.tipo == 'professor') {
+                        console.log('4');
+                        var sql = "SELECT * FROM tb_disciplina, tb_turma, tb_escola WHERE tb_turma.escola_id_turma = tb_escola.id_escola AND tb_disciplina.id_disciplina = ? AND tb_disciplina.turma_id_disciplina = tb_turma.id_turma AND (tb_escola.administrador_email_escola = ? OR tb_disciplina.professor_email_disciplina = ?);"
+                        var values = [
+                            [req.params.id],
+                            [''],
+                            [req.session.email]
+                        ];
+                        con.query(sql, values, function (err, result) {
+                            if (err) throw err;
+                            var sql = "DELETE FROM tb_disciplina WHERE id_disciplina = ?;";
+                            var id = req.params.id
+                            var id_turma = result[0]['id_turma']
+                            con.query(sql, id, function (err, result) {
+                                if (err) throw err;
+                                console.log("Numero de registros Apagados: " + result.affectedRows);
+                                res.redirect('/disciplinas/' + id_turma);
+        
+                            });
+                        });
+                    } else {
+                        var sql = "SELECT * FROM tb_disciplina, tb_turma, tb_escola WHERE tb_turma.escola_id_turma = tb_escola.id_escola AND tb_disciplina.id_disciplina = ? AND tb_disciplina.turma_id_disciplina = tb_turma.id_turma AND (tb_escola.administrador_email_escola = ? OR tb_disciplina.professor_email_disciplina = ?);"
+                        var values = [
+                            [req.params.id],
+                            [req.session.email],
+                            ['']
+                        ];
+                        console.log('1');
+                        
+                        con.query(sql, values, function (err, result) {
+                            if (err) throw err;
+                            var sql = "DELETE FROM tb_disciplina WHERE id_disciplina = ?;";
+                            var id = req.params.id
+                            var id_turma = result[0]['id_turma']
+                            console.log('2');
+                            con.query(sql, id, function (err, result) {
+                                console.log('3');
+                                if (err) throw err;
+                                console.log("Numero de registros Apagados: " + result.affectedRows);
+                                res.redirect('/disciplinas/' + id_turma);
+        
+                            });
+                        });
+                    }
+                    
+                })
+            } else {
+                var sql = "SELECT tb_disciplina.*, tb_turma.* FROM tb_disciplina JOIN tb_turma ON tb_disciplina.turma_id_disciplina = tb_turma.id_turma WHERE tb_disciplina.id_disciplina = ?;";
+                var id = req.params.id
+                con.query(sql, id, function (err, result) {
+                    if (err) throw err;
+                    res.redirect('/disciplinas/' + result[0]['id_turma']);
+
+                });
+            }
+        })
+    }
+});
+
+
+
+
+// UPDATE
+app.get('/editar_disciplina/:id', function (req, res) {
+    // se logado
+    if (req.session.logado) {
+        var sql = "SELECT tb_disciplina.*, tb_turma.*, tb_escola.* FROM tb_disciplina JOIN tb_turma ON tb_disciplina.turma_id_disciplina = tb_turma.id_turma JOIN tb_escola ON tb_turma.escola_id_turma = tb_escola.id_escola LEFT JOIN tb_usuario ON tb_usuario.email_usuario = tb_disciplina.professor_email_disciplina OR tb_usuario.email_usuario = tb_escola.administrador_email_escola WHERE tb_disciplina.id_disciplina = ? AND tb_usuario.email_usuario = ? AND (tb_usuario.email_usuario = tb_disciplina.professor_email_disciplina OR tb_usuario.email_usuario = tb_escola.administrador_email_escola);"
+        var values = [
+            [req.params.id],
+            [req.session.email]
+        ];
+        con.query(sql, values, function (err, result, fields) {
+            if (err) throw err;
+            if (result[0]['administrador_email_escola'] == req.session.email || result[0]['professor_email_disciplina']) { // se é o adm da escola ou professor da disciplina   
+
+
+                var sql = "SELECT d.*, t.*, e.nome_escola, u.email_usuario, u.nome_usuario, u.foto_usuario FROM tb_disciplina d JOIN tb_turma t ON d.turma_id_disciplina = t.id_turma JOIN tb_escola e ON t.escola_id_turma = e.id_escola JOIN tb_usuario u ON u.tipo_usuario = 'professor' WHERE d.id_disciplina = ?;"
+                var values = [
+                    [req.params.id]
+                ];
+                con.query(sql, values, function (err, result, fields) {
+                
+                    if (err) throw err;
+                    res.render('editar_disciplina.ejs', { mensagem: "", logado: req.session.logado, result: result, imagem: req.session.imagem, email: req.session.email, tipo: req.session.tipo });
+                
+                })
+
+
+
+            } else { // se não for o professor nem o administrador
+                var sql = "SELECT tb_disciplina.*, tb_turma.* FROM tb_disciplina JOIN tb_turma ON tb_disciplina.turma_id_disciplina = tb_turma.id_turma WHERE tb_disciplina.id_disciplina = ?;";
+                var id = req.params.id
+                con.query(sql, id, function (err, result) {
+                    if (err) throw err;
+                    res.redirect('/disciplinas/' + result[0]['id_turma']);
+
+                });
+            }
+        })
+    }
+});
+
+app.post('/editar_disciplina/:id_disciplina/:id', function (req, res) {
+
+    // se logado
+    if (req.session.logado) {
+        var sql = "SELECT tb_disciplina.*, tb_turma.*, tb_escola.* FROM tb_disciplina JOIN tb_turma ON tb_disciplina.turma_id_disciplina = tb_turma.id_turma JOIN tb_escola ON tb_turma.escola_id_turma = tb_escola.id_escola LEFT JOIN tb_usuario ON tb_usuario.email_usuario = tb_disciplina.professor_email_disciplina OR tb_usuario.email_usuario = tb_escola.administrador_email_escola WHERE tb_turma.id_turma = ? AND tb_usuario.email_usuario = ? AND (tb_usuario.email_usuario = tb_disciplina.professor_email_disciplina OR tb_usuario.email_usuario = tb_escola.administrador_email_escola);"
+        var values = [
+            [req.params.id],
+            [req.session.email]
+        ];
+        con.query(sql, values, function (err, result, fields) {
+            if (err) throw err;
+            if (result[0]['administrador_email_escola'] == req.session.email || result[0]['professor_email_disciplina']) { // se é o adm da escola ou professor da disciplina   
+               
+               
+
+
+
+
+                var sql = "SELECT * FROM tb_disciplina WHERE turma_id_disciplina = ?;"
+                var id = req.params.id
+                con.query(sql, id, function (err, result, fields) {
+                    if (err) throw err;
+                    var form = new formidable.IncomingForm();
+                    form.parse(req, (err, fields, files) => {
+
+                        var id = req.params.id;
+                        var sql = "UPDATE tb_disciplina SET nome_disciplina = ?, professor_email_disciplina = ? WHERE id_disciplina = ?";
+                        var values = [
+                            [fields['nome']],
+                            [fields['professor']],
+                            [req.params.id_disciplina]
+                        ];
+                        con.query(sql, values, function (err, result) {
+                            if (err) throw err;
+                            console.log("Numero de registros alterados: " + result.affectedRows);
+                            res.redirect('/disciplinas/' + id);
+                        });
+
+                    })
+                })
+
+               
+
+
+
+
+
+
+            } else { // se não for o professor nem o administrador
+                var sql = "SELECT tb_disciplina.*, tb_turma.* FROM tb_disciplina JOIN tb_turma ON tb_disciplina.turma_id_disciplina = tb_turma.id_turma WHERE tb_disciplina.id_disciplina = ?;";
+                var id = req.params.id
+                con.query(sql, id, function (err, result) {
+                    if (err) throw err;
+                    res.redirect('/disciplinas/' + result[0]['id_turma']);
+
+                });
+            }
+        })
+    }
+});
 
 
 
@@ -603,14 +842,10 @@ app.get('/disciplinas/:id_turma', function (req, res) {
 //------------------------------------------------------------------------------------------------------------------------
 
 
-
-
-
-
 // ------------- RANKINGS -------------
 
 app.get('/ranking_turmas/:id_escola', function (req, res) {
-    var sql = "SELECT t.id_turma, t.nome_turma, e.nome_escola, t.escola_id_turma, d.turma_id_disciplina, COUNT(a.id_advertencia) AS total_advertencias FROM tb_turma t LEFT JOIN tb_escola e ON t.escola_id_turma = e.id_escola LEFT JOIN tb_disciplina d ON t.id_turma = d.turma_id_disciplina LEFT JOIN tb_advertencia a ON d.id_disciplina = a.disciplina_id_advertencia WHERE t.escola_id_turma = 1 GROUP BY t.id_turma, t.nome_turma, e.nome_escola, t.escola_id_turma, d.turma_id_disciplina ORDER BY total_advertencias ASC;"
+    var sql = "SELECT *, COUNT(a.id_advertencia) AS total_advertencias FROM tb_turma t LEFT JOIN tb_disciplina d ON t.id_turma = d.turma_id_disciplina LEFT JOIN tb_advertencia a ON d.id_disciplina = a.disciplina_id_advertencia LEFT JOIN tb_escola e ON t.escola_id_turma = e.id_escola LEFT JOIN tb_usuario u ON d.professor_email_disciplina = u.email_usuario WHERE id_escola = ? GROUP BY t.id_turma ORDER BY total_advertencias ASC;"
     var id_escola = req.params.id_escola;
     console.log(id_escola);
     con.query(sql, id_escola, function (err, result, fields) {
@@ -629,7 +864,7 @@ app.get('/ranking_turmas/:id_escola', function (req, res) {
 })
 
 app.get('/ranking_disciplinas/:id_escola', function (req, res) {
-    var sql = "SELECT e.nome_escola, t.nome_turma, d.nome_disciplina, d.turma_id_disciplina, t.escola_id_turma, COUNT(a.id_advertencia) AS total_advertencias FROM tb_escola e JOIN tb_turma t ON e.id_escola = t.escola_id_turma JOIN tb_disciplina d ON t.id_turma = d.turma_id_disciplina LEFT JOIN tb_advertencia a ON d.id_disciplina = a.disciplina_id_advertencia WHERE e.id_escola = 1 GROUP BY e.nome_escola, t.nome_turma, d.nome_disciplina, d.turma_id_disciplina, t.escola_id_turma ORDER BY total_advertencias ASC;"
+    var sql = "SELECT *, COUNT(a.id_advertencia) AS total_advertencias FROM tb_disciplina d JOIN tb_turma t ON d.turma_id_disciplina = t.id_turma JOIN tb_escola e ON t.escola_id_turma = e.id_escola LEFT JOIN tb_advertencia a ON d.id_disciplina = a.disciplina_id_advertencia LEFT JOIN tb_usuario u ON d.professor_email_disciplina = u.email_usuario WHERE e.id_escola = ? GROUP BY d.id_disciplina ORDER BY total_advertencias ASC;"
     var id_escola = req.params.id_escola;
     console.log(id_escola);
     con.query(sql, id_escola, function (err, result, fields) {
@@ -648,7 +883,7 @@ app.get('/ranking_disciplinas/:id_escola', function (req, res) {
 })
 
 app.get('/ranking_disciplinas_turmas/:id_escola', function (req, res) {
-    var sql = "SELECT t.nome_turma, d.nome_disciplina, d.turma_id_disciplina, t.escola_id_turma, COUNT(a.id_advertencia) AS total_advertencias FROM tb_disciplina d JOIN tb_turma t ON d.turma_id_disciplina = t.id_turma LEFT JOIN tb_advertencia a ON d.id_disciplina = a.disciplina_id_advertencia WHERE t.id_turma = 1 GROUP BY t.nome_turma, d.nome_disciplina, d.turma_id_disciplina, t.escola_id_turma ORDER BY total_advertencias ASC;"
+    var sql = "SELECT *, COUNT(a.id_advertencia) AS total_advertencias FROM tb_disciplina d JOIN tb_turma t ON d.turma_id_disciplina = t.id_turma LEFT JOIN tb_advertencia a ON d.id_disciplina = a.disciplina_id_advertencia LEFT JOIN tb_escola e ON t.escola_id_turma = e.id_escola LEFT JOIN tb_usuario u ON d.professor_email_disciplina = u.email_usuario WHERE t.id_turma = ? GROUP BY d.id_disciplina ORDER BY total_advertencias ASC;"
     var id_escola = req.params.id_escola;
     console.log(id_escola);
     con.query(sql, id_escola, function (err, result, fields) {
@@ -665,6 +900,11 @@ app.get('/ranking_disciplinas_turmas/:id_escola', function (req, res) {
         }
     });
 })
+
+
+// Select de melhores disciplinas de uma turma
+// SELECT *, COUNT(a.id_advertencia) AS total_advertencias FROM tb_disciplina d JOIN tb_turma t ON d.turma_id_disciplina = t.id_turma LEFT JOIN tb_advertencia a ON d.id_disciplina = a.disciplina_id_advertencia LEFT JOIN tb_escola e ON t.escola_id_turma = e.id_escola LEFT JOIN tb_usuario u ON d.professor_email_disciplina = u.email_usuario WHERE t.id_turma = 5 GROUP BY d.id_disciplina ORDER BY total_advertencias ASC;
+
 
 
 

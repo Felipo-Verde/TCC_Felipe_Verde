@@ -88,30 +88,36 @@
                                 </div>
                         <% } %>
 
-                        <form method="POST" action="/editar_turma/<%= result[0]['id_turma'] %>" enctype="multipart/form-data"> <!-- action="/cadastro" -->
-                            <legend style="font-size: 40px; text-align: center">Cadastro de Turma</legend>
+                        <form method="POST" action="/editar_disciplina/<%= result[0]['id_disciplina'] %>/<%= result[0]['turma_id_disciplina'] %>" enctype="multipart/form-data"> <!-- action="/cadastro" -->
+                            <legend style="font-size: 40px; text-align: center">Editar Disciplina</legend>
 
                             <div class="form-floating mb-3">
-                                <input type="text" class="form-control" name="nome" id="nome" value="<%= result[0]['nome_turma'] %>" placeholder="nome">
+                                <input type="text" class="form-control" name="nome" id="nome" value="<%= result[0]['nome_disciplina'] %>" placeholder="nome">
                                 <label for="nome">Nome</label>
                             </div>
 
-                            <div class="form-floating mb-3">
-                                <input type="text" class="form-control" name="alunos" value="<%= result[0]['numalunos_turma'] %>" id="alunos"
-                                    placeholder="30">
-                                <label for="alunos">Número de alunos</label>
-                            </div>
+                            <div class="form-floating mb-3 col-md">
+                                <div class="form-floating mb-3">
+                                    <select class="form-select" id="floatingSelect" name="professor" aria-label="Floating label select example">
+                                        
+                                        <% result.forEach(resulta=> { %>
 
-                            <div class="form-floating mb-3">
-                                <select class="form-select" id="floatingSelect" name="turno" aria-label="Floating label select example">
+                                            <% if (resulta.professor_email_disciplina == resulta.email_usuario) { %>
 
-                                    <option value="matutino" <% if (result[0]['turno_turma'] == 'matutino') { %> selected <% } %>>Matutino</option>
-                                    <option value="vespertino" <% if (result[0]['turno_turma'] == 'vespertino') { %> selected <% } %> >Vespertino</option>
-                                    <option value="noturno" <% if (result[0]['turno_turma'] == 'noturno') { %> selected <% } %> >Noturno</option>
-                                    <option value="integral" <% if (result[0]['turno_turma'] == 'integral') { %> selected <% } %> >Integral</option>
+                                                <option value="<%= resulta.email_usuario %>" selected><%= resulta.nome_usuario %></option>
 
-                                </select>
-                                <label for="floatingSelect">Turno</label>
+                                            <% } else { %>
+                                            
+                                                <option value="<%= resulta.email_usuario %>"><%= resulta.nome_usuario %></option>
+                                            
+                                            <% } %>
+                                            
+                                            
+                                            <% }) %>
+                                            
+                                    </select>
+                                    <label for="floatingSelect">professor</label>
+                                </div>
                             </div>
 
                             <button type="submit" class="btn btn-primary">Enviar</button>

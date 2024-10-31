@@ -33,8 +33,8 @@
                         esc = result[0]['nome_escola']
                         esc_id = result[0]['id_escola']
 
-                        tur = ''
-                        tur_id = 0
+                        tur = result[0]['nome_turma']
+                        tur_id = result[0]['id_turma']
 
                     %>
 
@@ -88,30 +88,27 @@
                                 </div>
                         <% } %>
 
-                        <form method="POST" action="/editar_turma/<%= result[0]['id_turma'] %>" enctype="multipart/form-data"> <!-- action="/cadastro" -->
-                            <legend style="font-size: 40px; text-align: center">Cadastro de Turma</legend>
+                        <form method="POST" action="/cadastro_disciplina/<%= result[0]['id_turma'] %>" enctype="multipart/form-data"> <!-- action="/cadastro" -->
+                            <legend style="font-size: 40px; text-align: center">Cadastro de Disciplina</legend>
 
-                            <div class="form-floating mb-3">
-                                <input type="text" class="form-control" name="nome" id="nome" value="<%= result[0]['nome_turma'] %>" placeholder="nome">
-                                <label for="nome">Nome</label>
+                            <div class="form-floating mb-3 col-md">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" name="nome" id="nome" placeholder="nome">
+                                    <label for="nome">Nome</label>
+                                </div>
                             </div>
 
-                            <div class="form-floating mb-3">
-                                <input type="text" class="form-control" name="alunos" value="<%= result[0]['numalunos_turma'] %>" id="alunos"
-                                    placeholder="30">
-                                <label for="alunos">Número de alunos</label>
-                            </div>
-
-                            <div class="form-floating mb-3">
-                                <select class="form-select" id="floatingSelect" name="turno" aria-label="Floating label select example">
-
-                                    <option value="matutino" <% if (result[0]['turno_turma'] == 'matutino') { %> selected <% } %>>Matutino</option>
-                                    <option value="vespertino" <% if (result[0]['turno_turma'] == 'vespertino') { %> selected <% } %> >Vespertino</option>
-                                    <option value="noturno" <% if (result[0]['turno_turma'] == 'noturno') { %> selected <% } %> >Noturno</option>
-                                    <option value="integral" <% if (result[0]['turno_turma'] == 'integral') { %> selected <% } %> >Integral</option>
-
-                                </select>
-                                <label for="floatingSelect">Turno</label>
+                            <div class="form-floating mb-3 col-md">
+                                <div class="form-floating mb-3">
+                                    <select class="form-select" id="floatingSelect" name="professor" aria-label="Floating label select example">
+                                        
+                                        <% result.forEach(resulta=> { %>
+                                            <option value="<%= resulta.email_usuario %>"><%= resulta.nome_usuario %></option>
+                                            <% }) %>
+                                            
+                                    </select>
+                                    <label for="floatingSelect">professor</label>
+                                </div>
                             </div>
 
                             <button type="submit" class="btn btn-primary">Enviar</button>
